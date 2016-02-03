@@ -1,0 +1,9 @@
+Test du serveur :
+
+1) Quand on quitte le serveur avec Ctrl+C, on voit que l'adresse est déjà utilisée et donc qu'on ne peut pas relancer la création du serveur. (Erreur : bind)
+
+2) Le serveur s'arrete car il n'y a plus de socket au bout
+
+3)Il est impossible de se connecter 
+
+4)Le message ne s'affiche que sur le premier client connecté, car la connection est limitée à un seul client pour l'instant. (1seul processus)
