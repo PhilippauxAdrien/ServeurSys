@@ -13,8 +13,8 @@ int main(void){
 		}
 
 	int socket_client ;
-	const char *message_bienvenue = "Bonjour, bienvenue sur mon serveur\nCe serveur est un serveur test\nDonc s'il ne fonctionne pas encore correctement,\nNe vous inquietez pas\nNous allons régler cela dans les plus brefs délais\nEn attendant, vous pouvez regarder ce joli message défiler\nEnfin, si tout marche bien!" ;
-	
+	//const char *message_bienvenue = "Bonjour, bienvenue sur mon serveur\nCe serveur est un serveur test\nDonc s'il ne fonctionne pas encore correctement,\nNe vous inquietez pas\nNous allons régler cela dans les plus brefs délais\nEn attendant, vous pouvez regarder ce joli message défiler\nEnfin, si tout marche bien!" ;
+	char buf[4096];
 	while(1){
 	
 		socket_client = accept_client(socket_serveur,NULL,NULL);
@@ -28,11 +28,16 @@ int main(void){
 		
 		while(1){
 		sleep(1); /* Attente d'une seconde avant l'envoi du message */
-		if(write(socket_client,message_bienvenue,strlen(message_bienvenue)) == -1){
+		if(read(socket_client , buf ,sizeof(buf)) == -1){
+			perror("read");
+			break;
+		}
+		if(write(socket_client,buf,strlen(buf)) == -1){
 			perror("write");
 			break;
 			} 
 		}
+		close(socket_client);
 	}
 
 	return 0;
