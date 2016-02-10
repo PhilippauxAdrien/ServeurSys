@@ -7,5 +7,5 @@ doit pouvoir être utilisée directement par un appel à accept .
 La fonction retourne -1 en cas d ’ erreur ou le descripteur de la
 socket créée . */
 int creer_serveur(int port);
-int accept_client(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+int accept_client(int sock_serveur);
 #endif
