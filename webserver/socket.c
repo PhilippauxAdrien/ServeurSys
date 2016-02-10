@@ -1,13 +1,12 @@
-#include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
 #include "socket.h"
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <stdlib.h>
 
 const char *message_bienvenue = "Bonjour, bienvenue sur mon serveur\nCe serveur est un serveur test\nDonc s'il ne fonctionne pas encore correctement,\nNe vous inquietez pas\nNous allons régler cela dans les plus brefs délais\nEn attendant, vous pouvez regarder ce joli message défiler\nEnfin, si tout marche bien!\n" ;
 
+void initialiser_signaux(void) {
+ 	if(signal(SIGPIPE,SIG_IGN) == SIG_ERR){
+		perror("signal");
+	}
+}
 
 int creer_serveur(int port){
 	int socket_serveur ;
@@ -23,6 +22,8 @@ int creer_serveur(int port){
  	if(setsockopt(socket_serveur, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int)) == -1){
      	perror("Can not set SO_REUSEADDR option");
  	}
+ 	
+ 	initialiser_signaux();
 
 	/* Utilisation de la socket serveur */
 	struct sockaddr_in saddr;
@@ -46,6 +47,7 @@ int creer_serveur(int port){
 	
 	return socket_serveur;
 }
+
 
 int accept_client(int sock_serveur){
 	int socket_client;
