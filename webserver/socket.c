@@ -1,6 +1,7 @@
 #include "socket.h"
 
 const char *message_bienvenue = "Bonjour, bienvenue sur mon serveur\nCe serveur est un serveur test\nDonc s'il ne fonctionne pas encore correctement,\nNe vous inquietez pas\nNous allons régler cela dans les plus brefs délais\nEn attendant, vous pouvez regarder ce joli message défiler\nEnfin, si tout marche bien!\n" ;
+const char *server_name = "<ServeurSys>";
 
 void traitement_signal(int sig){
 	printf("Signal %d reçu\n",sig);
@@ -66,6 +67,7 @@ int creer_serveur(int port){
 
 int accept_client(int sock_serveur){
 	int socket_client;
+	FILE *file;
 	socket_client = accept(sock_serveur, NULL, NULL);
 
 	if(socket_client == -1){
@@ -74,21 +76,14 @@ int accept_client(int sock_serveur){
 	}
 
 	if(fork() == 0){
-		write(socket_client, message_bienvenue, strlen(message_bienvenue));
+		file= fdopen(socket_client, "w+");
+		fprintf(file, "%s %s\n",server_name,message_bienvenue);
+		
 		char buf[4096];
 
-		while(1){
-			bzero(buf,4096);
-			sleep(1); /* Attente d'une seconde avant l'envoi du message */
-			if(read(socket_client , buf ,sizeof(buf)) == -1){
-				perror("read");
-				break;
-			}
-			if(write(socket_client,buf,strlen(buf)) == -1){
-				perror("write");
-				break;
-			} 
-		}
+   	 	while(fgets(buf, 4096, file) != NULL) {
+     		 fprintf(file, "%s %s", server_name, buf);
+  	 	}
 		close(sock_serveur);
 		close(socket_client);
 		exit(1);
