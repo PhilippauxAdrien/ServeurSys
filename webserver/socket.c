@@ -18,6 +18,12 @@ int creer_serveur(int port){
 		/* traitement de l ’ erreur */
 		return -1;
 	}
+
+	int optval = 1;
+ 	if(setsockopt(socket_serveur, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int)) == -1){
+     	perror("Can not set SO_REUSEADDR option");
+ 	}
+
 	/* Utilisation de la socket serveur */
 	struct sockaddr_in saddr;
 	saddr.sin_family = AF_INET ; /* Socket ipv4 */
