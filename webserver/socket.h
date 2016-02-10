@@ -1,4 +1,12 @@
 #include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
+
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 /* * Crée une socket serveur qui écoute sur toute les interfaces IPv4
