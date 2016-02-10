@@ -2,7 +2,22 @@
 
 const char *message_bienvenue = "Bonjour, bienvenue sur mon serveur\nCe serveur est un serveur test\nDonc s'il ne fonctionne pas encore correctement,\nNe vous inquietez pas\nNous allons régler cela dans les plus brefs délais\nEn attendant, vous pouvez regarder ce joli message défiler\nEnfin, si tout marche bien!\n" ;
 
+void traitement_signal(int sig){
+	printf("Signal %d reçu\n",sig);
+	waitpid(-1, NULL, WNOHANG);
+}
+
 void initialiser_signaux(void) {
+	struct sigaction sa;
+
+	sa.sa_handler = traitement_signal;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
+	
+	if(sigaction(SIGCHLD,&sa,NULL) == -1){
+	perror("sigaction(SIGCHLD)");
+	}
+ 	
  	if(signal(SIGPIPE,SIG_IGN) == SIG_ERR){
 		perror("signal");
 	}
@@ -11,7 +26,7 @@ void initialiser_signaux(void) {
 int creer_serveur(int port){
 	int socket_serveur ;
 
-	socket_serveur = socket ( AF_INET , SOCK_STREAM , 0);
+	socket_serveur = socket(AF_INET,SOCK_STREAM,0);
 	if(socket_serveur == -1){
 		perror("socket_serveur");
 		/* traitement de l ’ erreur */
@@ -78,6 +93,7 @@ int accept_client(int sock_serveur){
 		close(socket_client);
 		exit(1);
 	}
+
 	close(socket_client);
 	return 0;
 }

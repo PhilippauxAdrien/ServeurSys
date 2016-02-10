@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
