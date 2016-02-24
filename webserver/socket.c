@@ -127,7 +127,7 @@ int accept_client(int sock_serveur){
      		 fprintf(file, " %s", error_msg);
     	} 
     	else { /* Sinon on renvoie le message et sa taille */
-      		fprintf(file, " %s%d\r\n\r\n%s %s",mess_ok,(int) (strlen(server_name) + strlen(message_bienvenue)), server_name, message_bienvenue);
+      		fprintf(file, "%s%d\r\n\r\n%s %s",mess_ok,(int) (strlen(server_name) + strlen(message_bienvenue)), server_name, message_bienvenue);
     	}
 		
 		fflush(file);   
