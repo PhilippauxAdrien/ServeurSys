@@ -10,6 +10,9 @@
 
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
+#define NO_ERROR 200
+#define ERROR_400 400
+#define ERROR_404 404
 /* * Crée une socket serveur qui écoute sur toute les interfaces IPv4
 de la machine sur le port passé en paramètre . La socket retournée
 doit pouvoir être utilisée directement par un appel à accept .

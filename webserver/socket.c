@@ -2,8 +2,10 @@
 
 const char *message_bienvenue = "Bonjour, bienvenue sur mon serveur\nCe serveur est un serveur test\nDonc s'il ne fonctionne pas encore correctement,\nNe vous inquietez pas\nNous allons régler cela dans les plus brefs délais\nEn attendant, vous pouvez regarder ce joli message défiler\nEnfin, si tout marche bien!\n" ;
 const char *server_name = "<ServeurSys>";
-const char *error_msg = "HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Lenght: 17\r\n\r\n400 Bad Request\r\n";
+const char *error_400 = "HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Lenght: 17\r\n\r\n400 Bad Request\r\n";
 const char *mess_ok = "HTTP/1.1 200 Ok\r\nConnection: close\r\nContent-Length: ";
+const char *error_404 = "HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-Lenght: 17\r\n\r\n404 NOT FOUND\r\n";
+
 void traitement_signal(int sig){
 	printf("Signal %d reçu\n",sig);
 	waitpid(-1, NULL, WNOHANG);
@@ -67,7 +69,7 @@ int creer_serveur(int port){
 
 int verif_requete(FILE *file){
 	char buf[4096];
-
+	
     if (fgets(buf, 4096, file) != NULL) {
       char *chaine = buf;
       int nbMots = 0;
@@ -75,30 +77,35 @@ int verif_requete(FILE *file){
    		
    	  /* Vérifie que le premier mot est "GET" */	
       if((chaine[0]!='G' || chaine[1]!='E' || chaine[2]!='T')){
-      	return -1;
+      	return ERROR_400;
       }
 	  /*Compte le nombre de mots sur la 1ere ligne*/
       while(chaine[0]!='\0'){
       	if(chaine[0] == ' '){
 	  		if(nbMots == 2) {
-	   			 return -1;
+	   			 return ERROR_400;
 	  		}
 	 		 mot[nbMots] = chaine;
 	  		 nbMots++;
 		}
 		chaine++;
       }
-      	printf("%s\n",mot[1]);
+     //printf(" : %c   %c\n", mot[0][1],mot[0][2]);
+     if(mot[0][1] != '/' || mot[0][2] != ' '){
+      	return ERROR_404;
+      } 
+     
       /*Vérification du mot*/
      if (strcmp(" HTTP/1.1\r\n", mot[1]) != 0 && strcmp(" HTTP/1.0\r\n", mot[1]) != 0) {
-	     return -1;
+	     return ERROR_400;
       }
+
    }
   	else{
 		return -1;
 	}
 
-	return 0;
+	return NO_ERROR;
 }
 int accept_client(int sock_serveur){
 	int socket_client;
@@ -123,13 +130,17 @@ int accept_client(int sock_serveur){
 	     		fini = 1;
       		}
     	}
-    	if(error < 0){ /*En cas d'erreur de l'entete : Error 400 */
-     		 fprintf(file, " %s", error_msg);
+    	if(error == ERROR_400){ /*En cas d'erreur de l'entete : Error 400 */
+     		 fprintf(file, "%s", error_400);
     	} 
-    	else { /* Sinon on renvoie le message et sa taille */
+    	else if(error == ERROR_404){ /*En cas d'erreur de l'entete : Error 400 */
+     		 fprintf(file, "%s", error_404);
+    	}
+    	else if(error == NO_ERROR){ /* Sinon on renvoie le message et sa taille */
       		fprintf(file, "%s%d\r\n\r\n%s %s",mess_ok,(int) (strlen(server_name) + strlen(message_bienvenue)), server_name, message_bienvenue);
     	}
 		
+
 		fflush(file);   
     	close(socket_client);
     	close(sock_serveur);
