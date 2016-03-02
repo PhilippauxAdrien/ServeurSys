@@ -13,6 +13,19 @@
 #define NO_ERROR 200
 #define ERROR_400 400
 #define ERROR_404 404
+
+enum http_method {
+HTTP_GET ,
+HTTP_UNSUPPORTED ,
+};
+
+typedef struct{
+enum http_method method ;
+int major_version ;
+int minor_version ;
+char * url ;
+}http_request ;
+
 /* * Crée une socket serveur qui écoute sur toute les interfaces IPv4
 de la machine sur le port passé en paramètre . La socket retournée
 doit pouvoir être utilisée directement par un appel à accept .
