@@ -56,25 +56,45 @@ int parse_http_request(const char *request_line , http_request *request){
     }
   return b;
 }
-
-void skip_headers(FILE *client)
-{
+/* Ignore l'entete */
+void skip_headers(FILE *client){
   char * buff = malloc(256);
   while(strcmp(buff,"\n") !=0 && strcmp(buff,"\r\n")!=0 ){
     fgets(buff,256,client);
   }
 }
 
-void send_status(FILE *client , int code , const char *reason_phrase)
-{
+void send_status(FILE *client , int code , const char *reason_phrase){
   fprintf(client, "HTTP/1.1 %d %s\n", code, reason_phrase);
 }
 
-void send_response(FILE *client , int code , const  char *reason_phrase , const  char *message_body)
-{
+void send_response(FILE *client , int code , const  char *reason_phrase , const  char *message_body){
   send_status(client, code, reason_phrase);
-  fprintf(client, "Content-Length : %d\r\n\r\n", (int)strlen(message_body));
-  fprintf(client, message_body);
+  fprintf(client, "Content-Length : %d\r\n\r\n%s", (int)strlen(message_body),message_body);
   fflush(client);  
+}
+
+/* Supprime les caractères suivant '?' dans l'url */
+char * rewrite_url (char * url) {
+  char  *res = "";
+  int tmp = 0;
+
+  while(url[tmp] != '\0' && tmp != -1){
+    if(url[tmp] != '?'){
+      res[tmp] = url[tmp];  
+    }
+    else {
+      tmp = -1;
+    }
+  tmp ++; 
+  }
+
+  return res;
+}
+
+int check_and_open(const char *url, const char *document_root){
+  int d;
+  
+  return -1;
 }
 
