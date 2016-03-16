@@ -19,6 +19,7 @@ char *fgets_or_exit(char *buffer , int size , FILE *stream){
 
 /* Analyse la premiere ligne de la requête */
 int parse_http_request(const char *request_line , http_request *request){
+  printf("%s\n", request_line);
   char* mot ="";
   char* req = strdup(request_line);
   int b = 1,i = 0;
@@ -31,13 +32,16 @@ int parse_http_request(const char *request_line , http_request *request){
 	     request->method = HTTP_GET;
 	   }
       if(i==2){
-	      request->url = mot;
+	      //request->url = mot;  
+        request->url = rewrite_url(mot);
+
 	     }	      
       if(i > 3){
 	       b = 0;
 	   }
       if(i == 3){
-	       if(strcmp(mot,"HTTP/1.0\r\n")==0){
+
+       if(strcmp(mot,"HTTP/1.0\r\n")==0){
 	      request->major_version = 1;
 	      request->minor_version = 0;
 	    }
@@ -48,7 +52,7 @@ int parse_http_request(const char *request_line , http_request *request){
 	  else{
 	      b = 0;
 	    }
-	}
+	 }
       mot=strtok(NULL," ");
     } 
     if(i < 3 ){
@@ -74,27 +78,116 @@ void send_response(FILE *client , int code , const  char *reason_phrase , const 
   fflush(client);  
 }
 
+void send_response_fd(FILE * client, int code, const char * reason_phrase, int fd, char *mime, char *contenu){
+  send_status(client, code, reason_phrase);
+  fprintf(client, "Connection: closed\r\nContent-Length: %d\n\rContent-type:%s\n\r\n%s\r\n",get_file_size(fd),mime,contenu);
+  fflush(client);
+}
 /* Supprime les caractères suivant '?' dans l'url */
 char * rewrite_url (char * url) {
-  char  *res = "";
-  int tmp = 0;
 
-  while(url[tmp] != '\0' && tmp != -1){
-    if(url[tmp] != '?'){
-      res[tmp] = url[tmp];  
-    }
-    else {
-      tmp = -1;
-    }
-  tmp ++; 
+  if(strcmp(url,"/")==0){
+    return "/index.html";
   }
 
-  return res;
+  return strtok(url, "?");
 }
 
-int check_and_open(const char *url, const char *document_root){
-  int d;
+/* Vérifie si le chemin est correct */
+int verif_chemin(const char * url){
+  if(access(url, F_OK) == -1){
+    perror("Unexistant file");
+    return 0;
+  }
+  if(access(url, X_OK) == -1){
+    perror("Unreachable file");
+    return 0;
+  }
+  struct stat statdata;
+  stat(url, &statdata);
+  if(!S_ISDIR(statdata.st_mode)){
+    perror("not a directory");
+    return 0;
+  }
+  return 1;
+}
+
+/* Vérifie la validité du fichier et l'ouvre ensuite */
+int check_and_open(const char * url, const char * document_root){
+  char * chemin = malloc(strlen(url)+strlen(document_root)+1);
+  strcpy(chemin, document_root);
+  strcat(chemin, url);
+  printf("%s\n", url);
+  FILE *fichier = NULL;
+  fichier = fopen(chemin,"r");
+ 
+    if (fichier == NULL){
+      perror("le fichier n'existe pas !");
+      return -1;
+    }
   
-  return -1;
+  struct stat statdata; 
+  stat(chemin, &statdata);
+
+  if (!S_ISREG(statdata.st_mode)){
+    perror("le fichier n'es pas un fichier régulier");
+    return -1;
+  }
+  int fd = open(chemin,O_RDONLY);
+  return fd;
 }
 
+/* Retourne la taille du fichier avec lstat */
+int get_file_size(int fd){
+  struct stat statbuf;
+  fstat(fd,&statbuf);
+  return statbuf.st_size;
+}
+
+/* Copie le fichier depuis in vers out */
+int copy(int in, int out){
+
+  char * buff = malloc(get_file_size(in));
+  if(read(in,buff,get_file_size(in))==-1){
+    perror("read error");
+    return 0;
+  }
+  if(write(out,buff,get_file_size(in))==-1){
+    perror("write error");
+    return 0;
+  }
+  return 1;
+}
+
+char * gettype(char  nom[]){
+  int k=strlen(nom);
+  int i=0;
+  
+  while(i<k && nom[i]!='.'){
+    i++;
+  }
+  if(nom[i]=='.'){
+    i++;
+  }
+  int j=0;
+  char ext[strlen(nom)-i];
+  while(i+j<=k  ){
+    ext[j]=nom[i+j];
+    j++;
+  }
+  printf("ext : %s\n",ext);
+  fflush(stdout);
+  if(strcmp(ext,"jpg")==0){
+    return "image/jpeg";
+  }
+  if(strcmp(ext,"jpeg")==0){
+    return "image/jpeg";
+  }
+  if(strcmp(ext,"html")==0){
+    return "text/html";
+  }
+  if(strcmp(ext,"htm")==0){
+    return "text/html";
+  }
+  return "text/plain";
+}

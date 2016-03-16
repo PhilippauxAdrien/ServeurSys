@@ -1,9 +1,21 @@
 #include "socket.h"
 
-
 void traitement_signal(int sig){
+	int status;
 	printf("Signal %d reçu\n",sig);
-	waitpid(-1, NULL, WNOHANG);
+	waitpid(-1, &status, WNOHANG);
+	if (WIFSIGNALED(status))
+	{
+		switch (WTERMSIG(status))
+		{
+			case SIGSEGV:
+				fprintf(stderr, "Erreur de segmentation\n");
+				break;
+			default:
+				fprintf(stderr, "Fils arrété par signal %d\n", WTERMSIG(status));
+				break;
+		}
+	}
 }
 
 void initialiser_signaux(void) {
@@ -62,6 +74,3 @@ int creer_serveur(int port){
 	
 	return socket_serveur;
 }
-
-
-

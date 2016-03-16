@@ -1,35 +1,29 @@
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <stdlib.h>
-#include <signal.h>
+#include "main.h"
 
-#include "socket.h"
-#include "serveur.h"
+int main(int argc, char *argv[]){
+	
+	
+	if(argc != 2){
+		perror("arguments");
+		return 0;
+	}
 
-const char *message_bienvenue = "Bonjour, bienvenue sur mon serveur\nCe serveur est un serveur test\nDonc s'il ne fonctionne pas encore correctement,\nNe vous inquietez pas\nNous allons régler cela dans les plus brefs délais\nEn attendant, vous pouvez regarder ce joli message défiler\nEnfin, si tout marche bien!\n\n" ;
-const char *server_name = "<ServeurSys>";
-const char *error_400 = "HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Lenght: 17\r\n\r\n400 Bad Request\r\n";
-const char *mess_ok = "HTTP/1.1 200 Ok\r\nConnection: close\r\nContent-Length: ";
-const char *error_404 = "HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-Lenght: 17\r\n\r\n404 Not Found\r\n";
-
-int main()
-{
-  int socket_serveur, socket_client;
-  char buffer[80];
-  FILE* file;
-  char *req_line;
+	const char * chemin=argv[1];
+	if(!verif_chemin(chemin)){
+		return 0;
+	}
   
+  int fd = 0;
+  int socket_serveur, socket_client;
+  FILE *file;
   http_request request;
-
+  char buffer[256];
   initialiser_signaux();
   socket_serveur=creer_serveur(8080);
   
   while(1){
-      socket_client = accept ( socket_serveur , NULL , NULL );
-      if ( socket_client == -1){	 
+      socket_client = accept(socket_serveur , NULL , NULL );
+      if(socket_client == -1){	 
        perror ("accept");
 	  /* traitement d ' erreur */
 	 }
@@ -37,31 +31,43 @@ int main()
       file = fdopen(socket_client, "w+");
       if(file==NULL){
 	  perror ("fdopen");
+	  /* traitement d ' erreur */
 	 }
       
       int pid = fork();
       if(pid==-1){
 	  perror("fork");
+	  /* traitement d ' erreur */
 	  }
-      if(pid==0){	  
-	  req_line = fgets_or_exit(buffer, 80, file);
+      if(pid==0){	 
+
+	  char *req_line = fgets_or_exit(buffer, 256, file);
 	  fflush(file);
 	  int bad_request = parse_http_request(req_line, &request);
 	  skip_headers(file);
-	  if (bad_request == 0)
+
+	  if (bad_request == 0){
 	    send_response(file , 400, "Bad Request", "Bad request\r\n");
-	  else if (request.method  ==  HTTP_UNSUPPORTED)
+		}
+	  else if (request.method  ==  HTTP_UNSUPPORTED){
 	    send_response(file , 405, "Method Not Allowed", "Method Not Allowed\r\n");
-	  else if (strcmp(request.url, "/") == 0)
-	    send_response(file , 200, "OK", message_bienvenue);
-	  else
+		}
+	  else if((fd=check_and_open(request.url, chemin)) != -1){
+	  	//send_response(file , 200, "OK", message_bienvenue);
+	  	printf("Length file %d\n", get_file_size(fd));
+
+		send_response_fd(file , 200 , "OK" , fd, gettype(request.url), );
+	  }
+	  else{
 	    send_response(file , 404, "Not Found", "Not Found\r\n");
+	  }
+	  close(fd);
 	  exit(0);		  
 	}
-      else
-	{
+      else{
 	  close(socket_client);
-	}
+	  }
+
     }
   return 0; 
 }
