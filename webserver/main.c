@@ -56,7 +56,7 @@ int main(int argc, char *argv[]){
 	  	//send_response(file , 200, "OK", message_bienvenue);
 	  	printf("Length file %d\n", get_file_size(fd));
 
-		send_response_fd(file , 200 , "OK" , fd, gettype(request.url), );
+		send_response_fd(file , 200 , "OK" , fd, gettype(request.url), copy(fd,socket_client));
 	  }
 	  else{
 	    send_response(file , 404, "Not Found", "Not Found\r\n");

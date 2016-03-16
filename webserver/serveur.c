@@ -78,9 +78,9 @@ void send_response(FILE *client , int code , const  char *reason_phrase , const 
   fflush(client);  
 }
 
-void send_response_fd(FILE * client, int code, const char * reason_phrase, int fd, char *mime, char *contenu){
+void send_response_fd(FILE * client, int code, const char * reason_phrase, int fd, char *mime, int contenu){
   send_status(client, code, reason_phrase);
-  fprintf(client, "Connection: closed\r\nContent-Length: %d\n\rContent-type:%s\n\r\n%s\r\n",get_file_size(fd),mime,contenu);
+  fprintf(client, "Connection: closed\r\nContent-Length: %d\n\rContent-type:%s\n\r\n%d\r\n",get_file_size(fd),mime,contenu);
   fflush(client);
 }
 /* Supprime les caractères suivant '?' dans l'url */

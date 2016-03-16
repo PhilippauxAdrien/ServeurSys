@@ -21,8 +21,9 @@ typedef  struct
   char *url;
 } http_request;
 
+int copy(int in, int out);
 char * gettype(char  nom[]);
-void send_response_fd(FILE * client, int code, const char * reason_phrase, int fd, char mime[], char *contenu);
+void send_response_fd(FILE * client, int code, const char * reason_phrase, int fd, char mime[], int contenu);
 int get_file_size(int fd);
 int check_and_open(const char * url, const char * document_root);
 int verif_chemin(const char * url);
