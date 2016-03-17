@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
 	  skip_headers(file);
 
 	  if (bad_request == 0){
-	    send_response(file , 400, "Bad Request", "Bad request\r\n");
+	    send_response(file , 400, "Bad Request", "Bad Request\r\n");
 		}
 	  else if (request.method  ==  HTTP_UNSUPPORTED){
 	    send_response(file , 405, "Method Not Allowed", "Method Not Allowed\r\n");
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]){
 	  	//send_response(file , 200, "OK", message_bienvenue);
 	  	printf("Length file %d\n", get_file_size(fd));
 
-		send_response_fd(file , 200 , "OK" , fd, gettype(request.url), copy(fd,socket_client));
+		send_response_fd(file , 200 , "OK" , fd, gettype(request.url),socket_client);
 	  }
 	  else{
 	    send_response(file , 404, "Not Found", "Not Found\r\n");

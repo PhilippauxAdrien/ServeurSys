@@ -34,6 +34,7 @@ int parse_http_request(const char *request_line , http_request *request){
       if(i==2){
 	      //request->url = mot;  
         request->url = rewrite_url(mot);
+  printf("%s\n", request->url);
 
 	     }	      
       if(i > 3){
@@ -55,9 +56,7 @@ int parse_http_request(const char *request_line , http_request *request){
 	 }
       mot=strtok(NULL," ");
     } 
-    if(i < 3 ){
-        b = 0;
-    }
+    
   return b;
 }
 /* Ignore l'entete */
@@ -78,10 +77,12 @@ void send_response(FILE *client , int code , const  char *reason_phrase , const 
   fflush(client);  
 }
 
-void send_response_fd(FILE * client, int code, const char * reason_phrase, int fd, char *mime, int contenu){
+void send_response_fd(FILE * client, int code, const char * reason_phrase, int fd, char *mime, int out){
   send_status(client, code, reason_phrase);
-  fprintf(client, "Connection: closed\r\nContent-Length: %d\n\rContent-type:%s\n\r\n%d\r\n",get_file_size(fd),mime,contenu);
+  fprintf(client, "Connection: closed\r\nContent-Length: %d\n\rContent-type:%s\n\r\n",get_file_size(fd),mime);
   fflush(client);
+  copy(fd,out);
+
 }
 /* Supprime les caractères suivant '?' dans l'url */
 char * rewrite_url (char * url) {
