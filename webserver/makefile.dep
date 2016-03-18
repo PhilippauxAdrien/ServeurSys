@@ -1,3 +1,4 @@
-serveur.o: serveur.c serveur.h
-main.o: main.c main.h socket.h serveur.h
+serveur.o: serveur.c serveur.h stats.h
+main.o: main.c main.h socket.h serveur.h stats.h
+stats.o: stats.c stats.h
 socket.o: socket.c socket.h

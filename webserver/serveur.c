@@ -25,7 +25,7 @@ int parse_http_request(const char *request_line , http_request *request){
   int b = 1,i = 0;
   mot = strtok(req, " ");
   request->method = HTTP_UNSUPPORTED;
-
+  get_stats()->served_requests++;	 
   while(mot){
     ++i;
     if(i==1 && strcmp(mot,"GET")==0){
@@ -34,8 +34,7 @@ int parse_http_request(const char *request_line , http_request *request){
       if(i==2){
 	      //request->url = mot;  
         request->url = rewrite_url(mot);
-  printf("%s\n", request->url);
-
+  //printf("%s\n", request->url);
 	     }	      
       if(i > 3){
 	       b = 0;
@@ -56,7 +55,9 @@ int parse_http_request(const char *request_line , http_request *request){
 	 }
       mot=strtok(NULL," ");
     } 
-    
+    if(strcmp(request->url,"/stats")==0){
+	b = 42;
+    }
   return b;
 }
 /* Ignore l'entete */
@@ -118,7 +119,7 @@ int check_and_open(const char * url, const char * document_root){
   char * chemin = malloc(strlen(url)+strlen(document_root)+1);
   strcpy(chemin, document_root);
   strcat(chemin, url);
-  printf("%s\n", url);
+
   FILE *fichier = NULL;
   fichier = fopen(chemin,"r");
  
@@ -176,7 +177,7 @@ char * gettype(char  nom[]){
     ext[j]=nom[i+j];
     j++;
   }
-  printf("ext : %s\n",ext);
+
   fflush(stdout);
   if(strcmp(ext,"jpg")==0){
     return "image/jpeg";
@@ -191,4 +192,10 @@ char * gettype(char  nom[]){
     return "text/html";
   }
   return "text/plain";
+}
+
+void send_stats(FILE *client){
+ char statistiques [256];
+ sprintf(statistiques,"<html><u>Statistiques du serveur</u> </br>Connections effectuees : %d </br>Requetes effectuees : %d </br> Requetes 200 : %d </br> Requetes 400 %d </br> Requetes 403 %d </br> Requetes 404 %d</html>\r\n", get_stats()->served_connections, get_stats()->served_requests,get_stats()->ok_200, get_stats()->ko_400, get_stats()->ko_403, get_stats()->ko_404);
+	send_response(client , 200, "OK", statistiques);
 }

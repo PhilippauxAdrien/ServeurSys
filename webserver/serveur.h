@@ -7,6 +7,8 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include "stats.h"
+
 
 enum  http_method {
   HTTP_GET ,
@@ -21,6 +23,7 @@ typedef  struct
   char *url;
 } http_request;
 
+void send_stats(FILE *client);
 int copy(int in, int out);
 char * gettype(char  nom[]);
 void send_response_fd(FILE * client, int code, const char * reason_phrase, int fd, char mime[], int out);
